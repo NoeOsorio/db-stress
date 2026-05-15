@@ -843,7 +843,9 @@ function renderJobs() {
       </div>
       <div class="job-metrics">
         <div class="metric"><div class="k">elapsed</div><div class="v">${j.metrics.elapsed_sec}s</div></div>
-        <div class="metric"><div class="k">ops</div><div class="v">${fmtNum(j.metrics.ops)}</div></div>
+        ${j.workload === 'connections'
+          ? `<div class="metric"><div class="k">held conns</div><div class="v">${j.metrics.last_event?.held ?? 0}</div></div>`
+          : `<div class="metric"><div class="k">ops</div><div class="v">${fmtNum(j.metrics.ops)}</div></div>`}
         <div class="metric"><div class="k">ops/sec</div><div class="v">${j.metrics.ops_per_sec}</div></div>
         <div class="metric"><div class="k">avg latency</div><div class="v">${j.metrics.avg_latency_ms}ms</div></div>
       </div>

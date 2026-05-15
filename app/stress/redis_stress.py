@@ -38,18 +38,25 @@ async def connections_storm(
                 # Force the actual TCP connection by issuing a ping.
                 await c.ping()
                 clients.append(c)
-                report({"opened": len(clients)})
+                report({"opened": len(clients), "held": len(clients)})
             except Exception as e:
-                report({"error": str(e)[:200], "opened": len(clients)})
+                report({"error": str(e)[:200], "opened": len(clients), "held": len(clients)})
                 await asyncio.sleep(0.1)
+        # Keep them alive. Each ping is reported with latency so ops/sec
+        # actually moves on the dashboard — without this every tile sits at 0
+        # for the full duration and the workload looks dead.
         end = time.monotonic() + hold_seconds
         while time.monotonic() < end:
             for c in clients:
+                t0 = time.perf_counter()
                 try:
                     await c.ping()
-                except Exception:
-                    pass
-            report({"opened": len(clients), "held_for": int(hold_seconds - (end - time.monotonic()))})
+                    ms = (time.perf_counter() - t0) * 1000
+                    report({"latency_ms": ms, "ok": 1, "held": len(clients)})
+                except asyncio.CancelledError:
+                    raise
+                except Exception as e:
+                    report({"error": str(e)[:200], "held": len(clients)})
             await asyncio.sleep(2)
     finally:
         for c in clients:

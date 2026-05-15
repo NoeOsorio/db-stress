@@ -44,19 +44,26 @@ async def connections_storm(
             try:
                 c = await asyncpg.connect(dsn=dsn, timeout=10)
                 conns.append(c)
-                report({"opened": len(conns)})
+                report({"opened": len(conns), "held": len(conns)})
             except Exception as e:  # one failed conn shouldn't sink the job
-                report({"error": str(e)[:200], "opened": len(conns)})
+                report({"error": str(e)[:200], "opened": len(conns), "held": len(conns)})
                 await asyncio.sleep(0.1)
-        # Keep them alive, periodically ping
+        # Keep them alive, periodically ping. Each ping is reported as an op
+        # with its latency, so the dashboard's ops/sec actually moves and the
+        # user can see the workload is alive (not just "DatabaseConnections =
+        # N on the cloud-side dashboard").
         end = time.monotonic() + hold_seconds
         while time.monotonic() < end:
             for c in conns:
+                t0 = time.perf_counter()
                 try:
                     await c.execute("SELECT 1")
-                except Exception:
-                    pass
-            report({"opened": len(conns), "held_for": int(hold_seconds - (end - time.monotonic()))})
+                    ms = (time.perf_counter() - t0) * 1000
+                    report({"latency_ms": ms, "ok": 1, "held": len(conns)})
+                except asyncio.CancelledError:
+                    raise
+                except Exception as e:
+                    report({"error": str(e)[:200], "held": len(conns)})
             await asyncio.sleep(2)
     finally:
         for c in conns:
