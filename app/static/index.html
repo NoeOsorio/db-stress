@@ -10,23 +10,32 @@
     --bg: #0c0f14;
     --panel: #141923;
     --panel-2: #1c2230;
+    --panel-3: #232b3b;
     --border: #2a3344;
     --fg: #e6edf6;
     --muted: #8896a8;
+    --muted-2: #6b7689;
     --accent: #4cb2ff;
+    --accent-soft: rgba(76, 178, 255, 0.12);
     --good: #4ddc92;
+    --good-soft: rgba(77, 220, 146, 0.12);
     --warn: #ffb347;
+    --warn-soft: rgba(255, 179, 71, 0.12);
     --bad: #ff6b6b;
-    --pg: #336791;
-    --redis: #d82c20;
+    --bad-soft: rgba(255, 107, 107, 0.12);
+    --pg: #5fa4e0;
+    --redis: #ff8a85;
   }
   * { box-sizing: border-box; }
+  html, body { height: 100%; }
   body {
     margin: 0;
-    font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background: var(--bg);
     color: var(--fg);
   }
+  code, .mono { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; }
+
   header {
     display: flex;
     align-items: center;
@@ -35,8 +44,13 @@
     border-bottom: 1px solid var(--border);
     background: var(--panel);
   }
-  header h1 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: 0.4px; }
-  header .badges { display: flex; gap: 8px; }
+  header .brand { display: flex; align-items: center; gap: 10px; }
+  header .brand h1 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: 0.3px; }
+  header .brand .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 12px var(--accent);
+  }
+  header .badges { display: flex; gap: 6px; }
   .badge {
     padding: 4px 10px;
     border-radius: 999px;
@@ -45,75 +59,236 @@
     background: var(--panel-2);
     border: 1px solid var(--border);
     color: var(--muted);
+    display: inline-flex; align-items: center; gap: 6px;
   }
-  .badge.ok { color: var(--good); border-color: rgba(77, 220, 146, 0.4); }
-  .badge.bad { color: var(--bad); border-color: rgba(255, 107, 107, 0.4); }
+  .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .badge.ok { color: var(--good); border-color: rgba(77, 220, 146, 0.35); background: var(--good-soft); }
+  .badge.bad { color: var(--bad); border-color: rgba(255, 107, 107, 0.35); background: var(--bad-soft); }
 
   main {
     display: grid;
-    grid-template-columns: 380px 1fr;
+    grid-template-columns: 360px 1fr;
     gap: 18px;
     padding: 18px;
+    align-items: start;
   }
-  @media (max-width: 980px) { main { grid-template-columns: 1fr; } }
+  @media (max-width: 1080px) { main { grid-template-columns: 1fr; } }
 
   .panel {
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: 12px;
     padding: 16px;
   }
   .panel h2 {
     margin: 0 0 12px 0;
-    font-size: 13px;
+    font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 0.6px;
+    letter-spacing: 0.8px;
     color: var(--muted);
+    font-weight: 700;
+  }
+
+  /* ---------- Configurator (left) ---------- */
+  .target-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .target-tabs button {
+    flex: 1;
+    padding: 9px 0;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 8px;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 600;
+    transition: all 0.12s;
+  }
+  .target-tabs button.active[data-target="postgres"] {
+    color: var(--pg); border-color: var(--pg); background: rgba(95, 164, 224, 0.08);
+  }
+  .target-tabs button.active[data-target="redis"] {
+    color: var(--redis); border-color: var(--redis); background: rgba(255, 138, 133, 0.08);
   }
 
   .row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; }
-  .row > label { flex: 0 0 110px; color: var(--muted); font-size: 12px; }
-  .row > .ctrl { flex: 1; display: flex; align-items: center; gap: 8px; }
+  .row > label { flex: 0 0 105px; color: var(--muted); font-size: 12px; }
+  .row > .ctrl { flex: 1; display: flex; align-items: center; gap: 10px; }
 
   select, input[type="number"] {
     width: 100%;
     background: var(--panel-2);
     color: var(--fg);
     border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 7px 9px;
+    border-radius: 7px;
+    padding: 8px 10px;
     font: inherit;
   }
-  input[type="range"] { flex: 1; }
-  .range-val { width: 70px; text-align: right; font-variant-numeric: tabular-nums; color: var(--fg); }
+  select:focus, input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  input[type="range"] { flex: 1; accent-color: var(--accent); }
+  .range-val {
+    min-width: 56px; text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--fg);
+  }
 
-  .target-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
-  .target-tabs button {
-    flex: 1;
-    padding: 8px 0;
+  .preflight {
+    margin-top: 4px;
+    padding: 10px 12px;
     background: var(--panel-2);
-    border: 1px solid var(--border);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    font-size: 12px;
     color: var(--muted);
-    border-radius: 6px;
-    cursor: pointer;
-    font: inherit;
+    line-height: 1.55;
   }
-  .target-tabs button.active { color: var(--fg); border-color: var(--accent); background: rgba(76, 178, 255, 0.08); }
+  .preflight strong { color: var(--fg); }
 
   button.primary, button.danger {
     width: 100%;
-    padding: 10px 14px;
-    border-radius: 6px;
+    padding: 11px 14px;
+    border-radius: 8px;
     font: inherit;
-    font-weight: 600;
+    font-weight: 700;
     border: 0;
     cursor: pointer;
+    transition: filter 0.12s;
   }
-  button.primary { background: var(--accent); color: #0b1117; }
-  button.primary:disabled { opacity: 0.45; cursor: not-allowed; }
-  button.danger { background: var(--bad); color: #fff; margin-top: 10px; }
+  button.primary { background: var(--accent); color: #0b1117; margin-top: 12px; }
+  button.primary:hover { filter: brightness(1.08); }
+  button.primary:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
+  button.danger { background: transparent; color: var(--bad); border: 1px solid rgba(255, 107, 107, 0.4); margin-top: 8px; }
+  button.danger:hover { background: var(--bad-soft); }
+
+  .footer-note {
+    margin-top: 14px;
+    padding: 10px 12px;
+    background: var(--warn-soft);
+    border: 1px solid rgba(255, 179, 71, 0.25);
+    border-radius: 8px;
+    font-size: 11.5px;
+    color: var(--warn);
+    line-height: 1.5;
+  }
+
+  /* ---------- Preview card (top of right column) ---------- */
+  .preview {
+    border-radius: 12px;
+    padding: 18px 20px;
+    background:
+      linear-gradient(135deg, rgba(76, 178, 255, 0.05), transparent 60%),
+      var(--panel);
+    border: 1px solid var(--border);
+    margin-bottom: 18px;
+  }
+  .preview .head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .preview .title {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 16px; font-weight: 700;
+  }
+  .preview .title .target-chip {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 700;
+  }
+  .preview .title .target-chip.postgres { background: rgba(95, 164, 224, 0.15); color: var(--pg); }
+  .preview .title .target-chip.redis { background: rgba(255, 138, 133, 0.15); color: var(--redis); }
+
+  .safety {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .safety.read-only { color: var(--good); background: var(--good-soft); border: 1px solid rgba(77, 220, 146, 0.3); }
+  .safety.writes-temp { color: var(--warn); background: var(--warn-soft); border: 1px solid rgba(255, 179, 71, 0.3); }
+
+  .preview .what {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--fg);
+    margin: 0 0 16px 0;
+  }
+  .preview .what code {
+    background: var(--panel-2);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--accent);
+  }
+
+  .preview .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 720px) { .preview .grid { grid-template-columns: 1fr; } }
+
+  .preview .block {
+    background: var(--panel-2);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .preview .block .k {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .metric-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .metric-pill {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--panel-3);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    font-weight: 500;
+  }
+  .safety-points { margin: 0; padding: 0; list-style: none; font-size: 12.5px; }
+  .safety-points li {
+    display: flex; gap: 8px; align-items: flex-start;
+    margin-bottom: 5px; color: var(--muted);
+  }
+  .safety-points li::before {
+    content: "✓";
+    color: var(--good);
+    font-weight: 700;
+    flex: 0 0 10px;
+  }
+  .safety-points.warn li::before { content: "⚠"; color: var(--warn); }
+
+  /* ---------- Chart + Jobs ---------- */
+  .chart-wrap { height: 200px; margin-top: 8px; position: relative; }
+  .chart-empty {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted-2);
+    font-size: 13px;
+    pointer-events: none;
+  }
+  .chart-empty.hidden { display: none; }
 
   .jobs-grid { display: flex; flex-direction: column; gap: 10px; }
+  .job-empty {
+    padding: 20px;
+    text-align: center;
+    color: var(--muted-2);
+    font-size: 13px;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+  }
   .job {
     background: var(--panel-2);
     border: 1px solid var(--border);
@@ -127,13 +302,27 @@
   .job.stopped { border-left-color: var(--warn); }
   .job-head { display: flex; justify-content: space-between; align-items: center; }
   .job-head .title { font-weight: 600; }
-  .job-head .target.postgres { color: #79b8ff; }
-  .job-head .target.redis { color: #ff8a85; }
-  .job-meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .job-head .target { font-size: 11px; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .job-head .target.postgres { background: rgba(95, 164, 224, 0.15); color: var(--pg); }
+  .job-head .target.redis { background: rgba(255, 138, 133, 0.15); color: var(--redis); }
+  .job-head .status {
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    background: var(--panel-3);
+  }
+  .job-head .status.running { color: var(--accent); background: var(--accent-soft); }
+  .job-head .status.done { color: var(--good); background: var(--good-soft); }
+  .job-head .status.error { color: var(--bad); background: var(--bad-soft); }
+  .job-head .status.stopped { color: var(--warn); background: var(--warn-soft); }
+  .job-meta { color: var(--muted); font-size: 12px; margin-top: 6px; font-family: ui-monospace, SFMono-Regular, monospace; }
   .job-metrics {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+    gap: 8px;
     margin-top: 10px;
     font-variant-numeric: tabular-nums;
   }
@@ -152,26 +341,15 @@
     font-size: 12px;
   }
   .job-actions button:hover { color: var(--fg); border-color: var(--fg); }
-
-  .chart-wrap { height: 220px; margin-top: 8px; position: relative; }
-
-  .hint { font-size: 11px; color: var(--muted); margin-top: -6px; margin-bottom: 12px; line-height: 1.5; }
-
-  .footer-note {
-    margin-top: 14px;
-    padding: 10px 12px;
-    background: rgba(255, 179, 71, 0.08);
-    border: 1px solid rgba(255, 179, 71, 0.3);
-    border-radius: 6px;
-    font-size: 12px;
-    color: var(--warn);
-  }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Porter DB Stress</h1>
+  <div class="brand">
+    <span class="dot"></span>
+    <h1>Porter DB Stress</h1>
+  </div>
   <div class="badges">
     <span id="pg-badge" class="badge">postgres: …</span>
     <span id="redis-badge" class="badge">redis: …</span>
@@ -180,6 +358,7 @@
 </header>
 
 <main>
+  <!-- LEFT: Configurator -->
   <section class="panel">
     <h2>New stress job</h2>
 
@@ -194,7 +373,6 @@
         <select id="workload"></select>
       </div>
     </div>
-    <div id="workload-hint" class="hint"></div>
 
     <div class="row">
       <label>Duration (s)</label>
@@ -236,23 +414,58 @@
       </div>
     </div>
 
+    <div class="preflight" id="preflight">…</div>
+
     <button id="start-btn" class="primary">Start workload</button>
     <button id="stop-all-btn" class="danger">Stop ALL running jobs</button>
 
     <div class="footer-note">
-      Hard caps from server: duration ≤ <span id="cap-dur">?</span>s ·
-      workers ≤ <span id="cap-w">?</span> ·
-      conns ≤ <span id="cap-c">?</span> ·
-      jobs ≤ <span id="cap-j">?</span>
+      Server hard caps · duration ≤ <span id="cap-dur">?</span>s
+      · workers ≤ <span id="cap-w">?</span>
+      · conns ≤ <span id="cap-c">?</span>
+      · concurrent jobs ≤ <span id="cap-j">?</span>
     </div>
   </section>
 
-  <section class="panel">
-    <h2>Live throughput (ops/sec, all running jobs)</h2>
-    <div class="chart-wrap"><canvas id="chart"></canvas></div>
+  <!-- RIGHT: Preview card + chart + jobs -->
+  <section>
 
-    <h2 style="margin-top: 20px;">Jobs</h2>
-    <div id="jobs" class="jobs-grid"></div>
+    <!-- Preview card -->
+    <div class="preview" id="preview-card">
+      <div class="head">
+        <div class="title">
+          <span class="target-chip postgres" id="preview-target">postgres</span>
+          <span id="preview-name">Connections storm</span>
+        </div>
+        <span class="safety read-only" id="preview-safety">Read-only</span>
+      </div>
+      <p class="what" id="preview-what"></p>
+      <div class="grid">
+        <div class="block">
+          <div class="k">What to watch on your dashboard</div>
+          <div class="metric-pills" id="preview-metrics"></div>
+        </div>
+        <div class="block">
+          <div class="k">Safety</div>
+          <ul class="safety-points" id="preview-safety-points"></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="panel" style="margin-bottom: 18px;">
+      <h2>Live throughput (ops/sec across running jobs)</h2>
+      <div class="chart-wrap">
+        <canvas id="chart"></canvas>
+        <div class="chart-empty" id="chart-empty">No data yet · start a job to populate</div>
+      </div>
+    </div>
+
+    <!-- Jobs -->
+    <div class="panel">
+      <h2>Jobs</h2>
+      <div id="jobs" class="jobs-grid"></div>
+    </div>
   </section>
 </main>
 
@@ -262,12 +475,12 @@ const els = {
   tabPg: $('#tab-postgres'),
   tabRedis: $('#tab-redis'),
   workload: $('#workload'),
-  workloadHint: $('#workload-hint'),
   duration: $('#duration'), durationVal: $('#duration-val'),
   workers: $('#workers'), workersVal: $('#workers-val'), rowWorkers: $('#row-workers'),
   connections: $('#connections'), connectionsVal: $('#connections-val'), rowConnections: $('#row-connections'),
   intensity: $('#intensity'), intensityVal: $('#intensity-val'), rowIntensity: $('#row-intensity'),
   valueBytes: $('#value_bytes'), valueBytesVal: $('#value_bytes-val'), rowValueBytes: $('#row-value-bytes'),
+  preflight: $('#preflight'),
   startBtn: $('#start-btn'),
   stopAllBtn: $('#stop-all-btn'),
   pgBadge: $('#pg-badge'),
@@ -275,36 +488,126 @@ const els = {
   wsBadge: $('#ws-badge'),
   jobs: $('#jobs'),
   capDur: $('#cap-dur'), capW: $('#cap-w'), capC: $('#cap-c'), capJ: $('#cap-j'),
+  chartEmpty: $('#chart-empty'),
+  previewTarget: $('#preview-target'),
+  previewName: $('#preview-name'),
+  previewSafety: $('#preview-safety'),
+  previewWhat: $('#preview-what'),
+  previewMetrics: $('#preview-metrics'),
+  previewSafetyPoints: $('#preview-safety-points'),
 };
 
+// Workload catalog — keep copy short, plain English, no jargon-without-context.
+// `what(p)` returns a sentence using current slider values so the user sees
+// EXACTLY what's about to happen (e.g. "Opens 50 idle connections for 60s").
 const WORKLOADS = {
-  postgres: [
-    { v: 'connections', label: 'Connections storm',        hint: 'Open N idle sessions and hold them. Drives DatabaseConnections on RDS/Aurora.' },
-    { v: 'cpu',         label: 'CPU burn (sort + md5)',     hint: 'CPU-heavy queries with no disk writes. Drives CPUUtilization.' },
-    { v: 'memory',      label: 'Memory pressure',           hint: 'Big hash aggregates that exceed work_mem. Drives FreeableMemory ↓ / SwapUsage.' },
-    { v: 'disk',        label: 'Disk churn (INSERT/DELETE)',hint: 'WAL-heavy write workload on a temp table. Drives WriteIOPS / WriteThroughput. Cleans up on stop.' },
-    { v: 'oltp',        label: 'Mixed OLTP (75/25 r/w)',    hint: 'pgbench-style read/write mix on a small accounts table. Realistic baseline.' },
-  ],
-  redis: [
-    { v: 'connections', label: 'Connections storm',        hint: 'Open N persistent connections. Drives CurrConnections / NewConnections on ElastiCache.' },
-    { v: 'cpu',         label: 'CPU burn (pipelined ops)', hint: 'High op/sec via pipelined GET/SET. Drives EngineCPUUtilization.' },
-    { v: 'memory',      label: 'Memory fill (TTLed)',      hint: 'Writes 4KB+ values under stresstest_* keys with TTL. Drives BytesUsedForCache.' },
-    { v: 'disk',        label: 'BGSAVE churn',             hint: 'Periodic BGSAVE + big writes. Some ElastiCache configs forbid BGSAVE — the job logs and continues.' },
-  ],
+  postgres: {
+    connections: {
+      label: 'Connections storm',
+      what: p => `Opens <strong>${p.connections} idle Postgres sessions</strong> and just holds them for <strong>${p.duration}s</strong>. No queries are executed against your data.`,
+      metrics: ['DatabaseConnections', 'MaximumUsedTransactionIDs (none)'],
+      safety: 'read-only',
+      safetyPoints: [
+        'No SQL runs against your data — connections only.',
+        'Every session is closed when the job stops.',
+        'Auto-terminates after the duration even if you close this tab.',
+      ],
+    },
+    cpu: {
+      label: 'CPU burn (sort + md5)',
+      what: p => `Runs <strong>${p.workers} parallel queries</strong> doing <code>generate_series</code> + <code>md5</code> + sort for <strong>${p.duration}s</strong>. Pure CPU — nothing is written.`,
+      metrics: ['CPUUtilization', 'DBLoadCPU'],
+      safety: 'read-only',
+      safetyPoints: [
+        'No tables created, no rows written.',
+        'Queries are cancelled when the job stops.',
+        'Auto-terminates after the duration.',
+      ],
+    },
+    memory: {
+      label: 'Memory pressure',
+      what: p => `Runs <strong>${p.workers} hash-aggregate queries</strong> wide enough to exceed <code>work_mem</code> and spill, for <strong>${p.duration}s</strong>. Pressures cache &amp; freeable memory.`,
+      metrics: ['FreeableMemory', 'SwapUsage', 'BufferCacheHitRatio'],
+      safety: 'read-only',
+      safetyPoints: [
+        'Queries only — no schema changes, no rows written.',
+        'Queries are cancelled when the job stops.',
+        'Auto-terminates after the duration.',
+      ],
+    },
+    disk: {
+      label: 'Disk churn (INSERT / DELETE)',
+      what: p => `Repeatedly INSERTs and DELETEs rows into <code>stresstest_disk_*</code> (an isolated unlogged table) using <strong>${p.workers} workers</strong> for <strong>${p.duration}s</strong>. Drives WAL.`,
+      metrics: ['WriteIOPS', 'WriteThroughput', 'DiskQueueDepth'],
+      safety: 'writes-temp',
+      safetyPoints: [
+        'Touches ONLY its own <code>stresstest_disk_*</code> table — never your data.',
+        'Table is <code>DROP</code>ed automatically when the job stops.',
+        'Auto-terminates after the duration.',
+      ],
+    },
+    oltp: {
+      label: 'Mixed OLTP (75 % read / 25 % write)',
+      what: p => `pgbench-style traffic against <code>stresstest_accounts</code> (75 % SELECT / 25 % UPDATE) with <strong>${p.workers} workers</strong> for <strong>${p.duration}s</strong>.`,
+      metrics: ['CPUUtilization', 'WriteIOPS', 'CommitLatency'],
+      safety: 'writes-temp',
+      safetyPoints: [
+        'Touches ONLY <code>stresstest_accounts</code> — never your data.',
+        'Table is <code>DROP</code>ed automatically when the job stops.',
+        'Auto-terminates after the duration.',
+      ],
+    },
+  },
+  redis: {
+    connections: {
+      label: 'Connections storm',
+      what: p => `Opens <strong>${p.connections} persistent Redis connections</strong> and pings them periodically for <strong>${p.duration}s</strong>. No keys are written.`,
+      metrics: ['CurrConnections', 'NewConnections'],
+      safety: 'read-only',
+      safetyPoints: [
+        'No keys are read or written.',
+        'Every connection is closed when the job stops.',
+        'Auto-terminates after the duration.',
+      ],
+    },
+    cpu: {
+      label: 'CPU burn (pipelined GET / SET)',
+      what: p => `Pipelined GET/SET on <code>stresstest_*</code> keys with <strong>${p.workers} workers</strong> for <strong>${p.duration}s</strong>. Small payloads, very high op rate.`,
+      metrics: ['EngineCPUUtilization', 'CPUUtilization'],
+      safety: 'writes-temp',
+      safetyPoints: [
+        'Only writes keys under the <code>stresstest_*</code> namespace.',
+        'Every key has a 10-minute TTL — leaks self-clear.',
+        'Auto-terminates after the duration.',
+      ],
+    },
+    memory: {
+      label: 'Memory fill (TTL\'d)',
+      what: p => `Writes <strong>${p.value_bytes}-byte values</strong> to <code>stresstest_*</code> keys with <strong>${p.workers} workers</strong> for <strong>${p.duration}s</strong>. Pushes BytesUsedForCache up fast.`,
+      metrics: ['BytesUsedForCache', 'DatabaseMemoryUsagePercentage'],
+      safety: 'writes-temp',
+      safetyPoints: [
+        'Only writes keys under the <code>stresstest_*</code> namespace.',
+        'Every key has a 10-minute TTL — leaks self-clear.',
+        'Use “Cleanup leftover Redis keys” to clear immediately.',
+      ],
+    },
+    disk: {
+      label: 'BGSAVE churn',
+      what: p => `Triggers <code>BGSAVE</code> on a timer while writing for <strong>${p.duration}s</strong>. Each BGSAVE forks the engine and snapshots to RDB.`,
+      metrics: ['BackgroundSaveCount', 'ReplicationLag', 'BytesUsedForCache'],
+      safety: 'writes-temp',
+      safetyPoints: [
+        'ElastiCache may forbid <code>BGSAVE</code> — the job logs the rejection and keeps running.',
+        'Writes only under the <code>stresstest_*</code> namespace with TTL.',
+        'Auto-terminates after the duration.',
+      ],
+    },
+  },
 };
 
 let currentTarget = 'postgres';
 let caps = null;
-
-function renderWorkloads() {
-  els.workload.innerHTML = '';
-  WORKLOADS[currentTarget].forEach(w => {
-    const o = document.createElement('option');
-    o.value = w.v; o.textContent = w.label;
-    els.workload.appendChild(o);
-  });
-  onWorkloadChange();
-}
 
 function fmtNum(n) {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
@@ -312,15 +615,81 @@ function fmtNum(n) {
   return String(n);
 }
 
+function currentParams() {
+  return {
+    duration: parseInt(els.duration.value),
+    workers: parseInt(els.workers.value),
+    connections: parseInt(els.connections.value),
+    intensity: parseInt(els.intensity.value),
+    value_bytes: parseInt(els.valueBytes.value),
+  };
+}
+
+function renderWorkloads() {
+  els.workload.innerHTML = '';
+  Object.entries(WORKLOADS[currentTarget]).forEach(([v, meta]) => {
+    const o = document.createElement('option');
+    o.value = v; o.textContent = meta.label;
+    els.workload.appendChild(o);
+  });
+  onWorkloadChange();
+}
+
 function onWorkloadChange() {
   const w = els.workload.value;
-  const meta = WORKLOADS[currentTarget].find(x => x.v === w);
-  els.workloadHint.textContent = meta ? meta.hint : '';
   // Show/hide rows by workload
   els.rowConnections.style.display = (w === 'connections') ? '' : 'none';
   els.rowWorkers.style.display = (w === 'connections') ? 'none' : '';
   els.rowIntensity.style.display = (currentTarget === 'postgres' && w === 'cpu') ? '' : 'none';
   els.rowValueBytes.style.display = (currentTarget === 'redis' && w === 'memory') ? '' : 'none';
+  renderPreview();
+  renderPreflight();
+}
+
+function renderPreview() {
+  const w = els.workload.value;
+  const meta = WORKLOADS[currentTarget][w];
+  if (!meta) return;
+  els.previewTarget.textContent = currentTarget;
+  els.previewTarget.className = `target-chip ${currentTarget}`;
+  els.previewName.textContent = meta.label;
+  els.previewWhat.innerHTML = meta.what(currentParams());
+
+  els.previewSafety.className = `safety ${meta.safety}`;
+  els.previewSafety.textContent =
+    meta.safety === 'read-only' ? 'Read-only · no writes' :
+    meta.safety === 'writes-temp' ? 'Writes to stresstest_* only · auto-cleanup' :
+    'Destructive';
+
+  els.previewMetrics.innerHTML = '';
+  meta.metrics.forEach(m => {
+    const el = document.createElement('span');
+    el.className = 'metric-pill mono';
+    el.textContent = m;
+    els.previewMetrics.appendChild(el);
+  });
+
+  els.previewSafetyPoints.className =
+    'safety-points' + (meta.safety === 'writes-temp' ? ' warn' : '');
+  els.previewSafetyPoints.innerHTML = '';
+  meta.safetyPoints.forEach(p => {
+    const li = document.createElement('li');
+    li.innerHTML = p;
+    els.previewSafetyPoints.appendChild(li);
+  });
+}
+
+function renderPreflight() {
+  const w = els.workload.value;
+  const meta = WORKLOADS[currentTarget][w];
+  if (!meta) return;
+  const p = currentParams();
+  const cleanup = meta.safety === 'writes-temp'
+    ? ' Auto-cleanup at stop.'
+    : ' Nothing is written.';
+  els.preflight.innerHTML =
+    `You are about to start a <strong>${p.duration}-second ${currentTarget}</strong> ` +
+    `<strong>${meta.label.toLowerCase()}</strong>.${cleanup}`;
 }
 
 function setTarget(t) {
@@ -334,7 +703,7 @@ els.tabRedis.onclick = () => setTarget('redis');
 els.workload.onchange = onWorkloadChange;
 
 function bindRange(input, out, fmt = (v) => v) {
-  const sync = () => { out.textContent = fmt(input.value); };
+  const sync = () => { out.textContent = fmt(input.value); renderPreview(); renderPreflight(); };
   input.addEventListener('input', sync);
   sync();
 }
@@ -373,18 +742,32 @@ async function loadTargetCheck() {
 
 els.startBtn.onclick = async () => {
   const w = els.workload.value;
+  const meta = WORKLOADS[currentTarget][w];
+  const p = currentParams();
+
+  // Confirm whenever the workload writes data, even if to a sandboxed table.
+  if (meta.safety === 'writes-temp') {
+    const ok = confirm(
+      `This will create and write to objects under the "stresstest_*" namespace ` +
+      `on the target ${currentTarget}.\n\n` +
+      `They are auto-cleaned when the job stops.\n\n` +
+      `Proceed?`
+    );
+    if (!ok) return;
+  }
+
   const body = {
     target: currentTarget,
     workload: w,
-    duration_seconds: parseFloat(els.duration.value),
+    duration_seconds: p.duration,
   };
   if (w === 'connections') {
-    body.connections = parseInt(els.connections.value);
+    body.connections = p.connections;
   } else {
-    body.workers = parseInt(els.workers.value);
+    body.workers = p.workers;
   }
-  if (currentTarget === 'postgres' && w === 'cpu') body.intensity = parseInt(els.intensity.value);
-  if (currentTarget === 'redis' && w === 'memory') body.value_bytes = parseInt(els.valueBytes.value);
+  if (currentTarget === 'postgres' && w === 'cpu') body.intensity = p.intensity;
+  if (currentTarget === 'redis' && w === 'memory') body.value_bytes = p.value_bytes;
 
   els.startBtn.disabled = true;
   try {
@@ -403,7 +786,7 @@ els.startBtn.onclick = async () => {
 };
 
 els.stopAllBtn.onclick = async () => {
-  if (!confirm('Stop all running stress jobs?')) return;
+  if (!confirm('Stop ALL running stress jobs?')) return;
   await fetch('/api/jobs/stop-all', { method: 'POST' });
 };
 
@@ -414,28 +797,28 @@ function renderJobs() {
   els.jobs.innerHTML = '';
   const list = Array.from(jobs.values()).sort((a, b) => b.metrics.elapsed_sec - a.metrics.elapsed_sec);
   if (!list.length) {
-    els.jobs.innerHTML = '<div class="job" style="border-left-color: var(--border); color: var(--muted);">No jobs yet. Start one on the left →</div>';
+    els.jobs.innerHTML = '<div class="job-empty">No jobs yet — start one on the left.</div>';
     return;
   }
   for (const j of list) {
     const el = document.createElement('div');
     el.className = `job ${j.status}`;
+    const paramStr = Object.entries(j.params).map(([k,v]) => `${k}=${v}`).join(' · ');
     el.innerHTML = `
       <div class="job-head">
         <span class="title">
           <span class="target ${j.target}">${j.target}</span>
-          · ${j.workload}
-          <span style="color: var(--muted); font-weight: 400;">— ${j.status}</span>
+          ${j.workload}
         </span>
-        <span style="color: var(--muted); font-size: 11px;">id ${j.id}</span>
+        <span class="status ${j.status}">${j.status}</span>
       </div>
       <div class="job-meta">
-        ${Object.entries(j.params).map(([k,v]) => `${k}=${v}`).join(' · ')}
-        ${j.error ? `<div style="color: var(--bad); margin-top: 4px;">err: ${j.error}</div>` : ''}
+        ${paramStr} · id ${j.id}
+        ${j.error ? `<div style="color: var(--bad); margin-top: 6px;">err: ${j.error}</div>` : ''}
       </div>
       <div class="job-metrics">
         <div class="metric"><div class="k">elapsed</div><div class="v">${j.metrics.elapsed_sec}s</div></div>
-        <div class="metric"><div class="k">ops</div><div class="v">${j.metrics.ops}</div></div>
+        <div class="metric"><div class="k">ops</div><div class="v">${fmtNum(j.metrics.ops)}</div></div>
         <div class="metric"><div class="k">ops/sec</div><div class="v">${j.metrics.ops_per_sec}</div></div>
         <div class="metric"><div class="k">avg latency</div><div class="v">${j.metrics.avg_latency_ms}ms</div></div>
       </div>
@@ -449,45 +832,53 @@ function renderJobs() {
 }
 
 // ---- Chart ----
+const MAX_POINTS = 60;
 const chart = new Chart($('#chart').getContext('2d'), {
   type: 'line',
-  data: { labels: [], datasets: [] },
+  data: {
+    labels: Array.from({length: MAX_POINTS}, (_, i) =>
+      (i === 0) ? `-${MAX_POINTS - 1}s` :
+      (i === MAX_POINTS - 1) ? 'now' : ''
+    ),
+    datasets: [],
+  },
   options: {
     animation: false,
     responsive: true,
     maintainAspectRatio: false,
     scales: {
-      x: { ticks: { color: '#8896a8' }, grid: { color: '#1c2230' } },
+      x: { ticks: { color: '#8896a8', autoSkip: false }, grid: { color: '#1c2230' } },
       y: { ticks: { color: '#8896a8' }, grid: { color: '#1c2230' }, beginAtZero: true },
     },
-    plugins: { legend: { labels: { color: '#e6edf6' } } },
+    plugins: {
+      legend: { labels: { color: '#e6edf6', boxWidth: 12, boxHeight: 12 } },
+    },
   },
 });
 
-const seriesByJob = new Map(); // jobId -> { data: number[] }
-let tickIdx = 0;
-const MAX_POINTS = 60;
-
+const seriesByJob = new Map(); // jobId -> { dataset }
 function pushTick() {
-  tickIdx++;
-  chart.data.labels.push(tickIdx);
-  if (chart.data.labels.length > MAX_POINTS) chart.data.labels.shift();
-  // For each job we know about, append latest ops/sec
+  let hasRunning = false;
   for (const [id, job] of jobs) {
     let s = seriesByJob.get(id);
     if (!s) {
       const color = `hsl(${(parseInt(id, 16) % 360)}, 70%, 60%)`;
-      s = { data: [], dataset: {
+      s = { dataset: {
         label: `${job.target}/${job.workload} #${id.slice(0,4)}`,
-        data: [], borderColor: color, backgroundColor: color, tension: 0.25, borderWidth: 2, pointRadius: 0,
+        data: Array(MAX_POINTS).fill(null),
+        borderColor: color, backgroundColor: color,
+        tension: 0.25, borderWidth: 2, pointRadius: 0, spanGaps: true,
       } };
       seriesByJob.set(id, s);
       chart.data.datasets.push(s.dataset);
     }
-    const v = job.status === 'running' ? job.metrics.ops_per_sec : 0;
+    const v = job.status === 'running' ? job.metrics.ops_per_sec : null;
+    if (job.status === 'running') hasRunning = true;
     s.dataset.data.push(v);
     if (s.dataset.data.length > MAX_POINTS) s.dataset.data.shift();
   }
+  // Toggle empty-state overlay
+  els.chartEmpty.classList.toggle('hidden', hasRunning || chart.data.datasets.some(d => d.data.some(v => v !== null && v !== undefined)));
   chart.update('none');
 }
 setInterval(pushTick, 1000);
