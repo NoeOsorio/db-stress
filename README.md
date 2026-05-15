@@ -169,8 +169,10 @@ Two equivalent forms are accepted for each target. The app prefers the URL form 
 | `GET`  | `/api/targets/check`       | Live connectivity check against both DBs               |
 | `GET`  | `/api/jobs`                | List jobs                                              |
 | `POST` | `/api/jobs`                | Start a job (body below)                               |
-| `POST` | `/api/jobs/{id}/stop`      | Stop one job                                           |
+| `POST` | `/api/jobs/{id}/stop`      | Stop one running job                                   |
 | `POST` | `/api/jobs/stop-all`       | Emergency stop                                         |
+| `DELETE` | `/api/jobs/{id}`         | Remove a finished job from the list                    |
+| `POST` | `/api/jobs/clear-finished` | Remove every non-running job from the list            |
 | `POST` | `/api/cleanup/redis`       | `SCAN` + `UNLINK` any leftover `stresstest_*` keys     |
 | `WS`   | `/ws`                      | Live tick stream                                       |
 

@@ -155,6 +155,27 @@ class JobManager:
                 count += 1
         return count
 
+    def delete_job(self, jid: str) -> Optional[Job]:
+        """Remove a finished job from the registry. Returns None if missing,
+        raises if the job is still running (caller should stop it first)."""
+        job = self._jobs.get(jid)
+        if not job:
+            return None
+        if job.status == "running":
+            raise RuntimeError("Cannot remove a running job — stop it first.")
+        del self._jobs[jid]
+        self._broadcast({"type": "job_removed", "id": jid})
+        return job
+
+    def clear_finished(self) -> int:
+        """Remove every non-running job. Returns the number removed."""
+        removed = 0
+        for jid in [j.id for j in self._jobs.values() if j.status != "running"]:
+            del self._jobs[jid]
+            self._broadcast({"type": "job_removed", "id": jid})
+            removed += 1
+        return removed
+
     # ---------- dispatch ----------
 
     def _make_reporter(self, job: Job) -> Callable[[dict], None]:

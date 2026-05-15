@@ -160,6 +160,22 @@ async def stop_all() -> dict:
     return {"stopped": n}
 
 
+@app.delete("/api/jobs/{jid}")
+async def delete_job(jid: str) -> dict:
+    try:
+        job = manager.delete_job(jid)
+    except RuntimeError as e:
+        raise HTTPException(409, str(e))
+    if not job:
+        raise HTTPException(404, "no such job")
+    return {"removed": jid}
+
+
+@app.post("/api/jobs/clear-finished")
+async def clear_finished() -> dict:
+    return {"removed": manager.clear_finished()}
+
+
 @app.post("/api/cleanup/redis")
 async def cleanup_redis() -> dict:
     n = await manager.cleanup_redis_keys()
