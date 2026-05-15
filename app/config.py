@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Optional
 from urllib.parse import quote
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -10,19 +11,58 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     # --- Postgres ---
-    POSTGRES_URL: Optional[str] = None
-    PG_HOST: Optional[str] = None
-    PG_PORT: int = 5432
-    PG_USER: Optional[str] = None
-    PG_PASSWORD: Optional[str] = None
-    PG_DATABASE: Optional[str] = None
-    PG_SSLMODE: Optional[str] = None
+    # Porter's RDS datastore add-on injects DB_URL / DB_HOST / DB_PORT / DB_USER /
+    # DB_PASS / DB_NAME. We also accept the legacy POSTGRES_URL / PG_* names so
+    # local development setups keep working.
+    POSTGRES_URL: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("DB_URL", "POSTGRES_URL"),
+    )
+    PG_HOST: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("DB_HOST", "PG_HOST"),
+    )
+    PG_PORT: int = Field(
+        default=5432,
+        validation_alias=AliasChoices("DB_PORT", "PG_PORT"),
+    )
+    PG_USER: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("DB_USER", "PG_USER"),
+    )
+    PG_PASSWORD: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("DB_PASS", "DB_PASSWORD", "PG_PASSWORD"),
+    )
+    PG_DATABASE: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("DB_NAME", "PG_DATABASE"),
+    )
+    PG_SSLMODE: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("DB_SSLMODE", "PG_SSLMODE"),
+    )
 
     # --- Redis ---
-    REDIS_URL: Optional[str] = None
-    REDIS_HOST: Optional[str] = None
-    REDIS_PORT: int = 6379
-    REDIS_PASSWORD: Optional[str] = None
+    # Porter's ElastiCache datastore add-on injects REDIS_URL / REDIS_HOST /
+    # REDIS_PORT / REDIS_PASS. We accept REDIS_PASSWORD as an alias for
+    # compatibility with existing setups.
+    REDIS_URL: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("REDIS_URL"),
+    )
+    REDIS_HOST: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("REDIS_HOST"),
+    )
+    REDIS_PORT: int = Field(
+        default=6379,
+        validation_alias=AliasChoices("REDIS_PORT"),
+    )
+    REDIS_PASSWORD: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("REDIS_PASS", "REDIS_PASSWORD"),
+    )
     REDIS_DB: int = 0
     REDIS_TLS: bool = False
 

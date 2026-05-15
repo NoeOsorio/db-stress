@@ -5,7 +5,8 @@ services:
       - "8000:8000"
     environment:
       # Local dev defaults; override via Porter env vars in production.
-      POSTGRES_URL: ${POSTGRES_URL:-postgresql://stress:stress@postgres:5432/stress}
+      # DB_URL / REDIS_URL match the names Porter's datastore add-ons inject.
+      DB_URL: ${DB_URL:-postgresql://stress:stress@postgres:5432/stress}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       MAX_JOB_DURATION_SEC: ${MAX_JOB_DURATION_SEC:-600}
       MAX_WORKERS_PER_JOB: ${MAX_WORKERS_PER_JOB:-50}
