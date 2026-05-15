@@ -1,0 +1,27 @@
+"on":
+    push:
+        branches:
+            - main
+name: Deploy to db-stress
+jobs:
+    porter-deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            - name: Set Github tag
+              id: vars
+              run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+            - name: Setup porter
+              uses: porter-dev/setup-porter@v0.1.0
+            - name: Deploy stack
+              timeout-minutes: 30
+              run: porter apply
+              env:
+                PORTER_APP_NAME: db-stress
+                PORTER_CLUSTER: "1"
+                PORTER_DEPLOYMENT_TARGET_ID: 01dd683d-4529-4b78-bf54-a8adcf38c883
+                PORTER_HOST: https://noe-dev.withporter.run
+                PORTER_PROJECT: "1"
+                PORTER_TAG: ${{ steps.vars.outputs.sha_short }}
+                PORTER_TOKEN: ${{ secrets.PORTER_APP_1_3 }}
