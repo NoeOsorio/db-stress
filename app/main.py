@@ -65,7 +65,12 @@ class StartJobIn(BaseModel):
 
 @app.get("/")
 async def dashboard() -> FileResponse:
-    return FileResponse(STATIC_DIR / "index.html")
+    # Disable browser caching for the dashboard HTML so deploys are picked up
+    # immediately. The static assets under /static/* are fine to cache.
+    return FileResponse(
+        STATIC_DIR / "index.html",
+        headers={"Cache-Control": "no-store, must-revalidate"},
+    )
 
 
 @app.get("/healthz")

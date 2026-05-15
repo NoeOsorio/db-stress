@@ -802,6 +802,8 @@ els.startBtn.onclick = async () => {
       const e = await r.json().catch(() => ({}));
       alert('Failed: ' + (e.detail || r.statusText));
     }
+    // Refresh immediately so the new job appears even if the WS is lagging.
+    refreshJobs();
   } finally {
     els.startBtn.disabled = false;
   }
@@ -810,6 +812,7 @@ els.startBtn.onclick = async () => {
 els.stopAllBtn.onclick = async () => {
   if (!confirm('Stop ALL running stress jobs?')) return;
   await fetch('/api/jobs/stop-all', { method: 'POST' });
+  refreshJobs();
 };
 
 // ---- Jobs rendering ----
@@ -853,7 +856,15 @@ function renderJobs() {
     els.jobs.appendChild(el);
   }
   els.jobs.querySelectorAll('button[data-stop]').forEach(b => {
-    b.onclick = () => fetch(`/api/jobs/${b.dataset.stop}/stop`, { method: 'POST' });
+    b.onclick = async () => {
+      b.disabled = true;
+      try {
+        await fetch(`/api/jobs/${b.dataset.stop}/stop`, { method: 'POST' });
+      } finally {
+        // Re-fetch so the user sees the status change even if WS is lagging.
+        await refreshJobs();
+      }
+    };
   });
   els.jobs.querySelectorAll('button[data-remove]').forEach(b => {
     b.onclick = async () => {
@@ -864,8 +875,11 @@ function renderJobs() {
         b.disabled = false;
         const e = await r.json().catch(() => ({}));
         alert('Could not remove: ' + (e.detail || r.statusText));
+        await refreshJobs();
+        return;
       }
-      // Otherwise the WS job_removed event drops it from the UI.
+      // Drop locally too so the row disappears immediately, regardless of WS.
+      dropJob(id);
     };
   });
   // Disable "Clear finished" when there's nothing to clear.
@@ -879,7 +893,26 @@ els.clearFinishedBtn.onclick = async () => {
     const e = await r.json().catch(() => ({}));
     alert('Could not clear: ' + (e.detail || r.statusText));
   }
+  await refreshJobs();
 };
+
+// Authoritative re-sync from /api/jobs. Used after every action and as a
+// safety-net poll in case the WebSocket is hiccuping (proxy timeout, tab
+// suspended, etc.). Without this, missed WS frames make the UI look frozen.
+async function refreshJobs() {
+  try {
+    const r = await fetch('/api/jobs');
+    if (!r.ok) return;
+    const { jobs: list } = await r.json();
+    const seen = new Set();
+    for (const j of list) { jobs.set(j.id, j); seen.add(j.id); }
+    // Drop anything the server no longer knows about (e.g. deleted elsewhere).
+    for (const id of Array.from(jobs.keys())) {
+      if (!seen.has(id)) dropJob(id);
+    }
+    renderJobs();
+  } catch { /* swallow — next poll will retry */ }
+}
 
 function dropJob(id) {
   jobs.delete(id);
@@ -960,7 +993,12 @@ function connectWS() {
   ws.onmessage = (ev) => {
     const msg = JSON.parse(ev.data);
     if (msg.type === 'snapshot') {
-      for (const j of msg.jobs) jobs.set(j.id, j);
+      // Authoritative — drop ghosts the server no longer tracks.
+      const seen = new Set();
+      for (const j of msg.jobs) { jobs.set(j.id, j); seen.add(j.id); }
+      for (const id of Array.from(jobs.keys())) {
+        if (!seen.has(id)) dropJob(id);
+      }
     } else if (msg.type === 'job_started' || msg.type === 'job_finished') {
       jobs.set(msg.job.id, msg.job);
     } else if (msg.type === 'job_tick') {
@@ -979,9 +1017,12 @@ function connectWS() {
   await loadConfig();
   await loadTargetCheck();
   setTarget('postgres');
-  renderJobs();
+  await refreshJobs();
   connectWS();
   setInterval(loadTargetCheck, 15000);
+  // Safety-net poll — keeps the UI honest even if the WebSocket dies silently
+  // (proxy timeout, tab throttled, network blip). 4s is cheap and unnoticeable.
+  setInterval(refreshJobs, 4000);
 })();
 </script>
 </body>
