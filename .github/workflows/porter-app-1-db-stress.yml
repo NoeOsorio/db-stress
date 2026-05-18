@@ -20,8 +20,8 @@ jobs:
               env:
                 PORTER_APP_NAME: db-stress
                 PORTER_CLUSTER: "1"
-                PORTER_DEPLOYMENT_TARGET_ID: 01dd683d-4529-4b78-bf54-a8adcf38c883
+                PORTER_DEPLOYMENT_TARGET_ID: a3e346e7-2262-42bd-855e-d4347bdef3a2
                 PORTER_HOST: https://noe-dev.withporter.run
                 PORTER_PROJECT: "1"
                 PORTER_TAG: ${{ steps.vars.outputs.sha_short }}
-                PORTER_TOKEN: ${{ secrets.PORTER_APP_1_3 }}
+                PORTER_TOKEN: ${{ secrets.PORTER_APP_1_1 }}
