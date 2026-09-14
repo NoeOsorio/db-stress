@@ -13,14 +13,14 @@ jobs:
               id: vars
               run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
             - name: Setup porter
-              uses: porter-dev/setup-porter@v0.1.0
+              uses: porter-dev/setup-porter@v0.2.0
             - name: Deploy stack
               timeout-minutes: 30
               run: porter apply
               env:
                 PORTER_APP_NAME: db-stress
                 PORTER_CLUSTER: "1"
-                PORTER_DEPLOYMENT_TARGET_ID: d5a90ec0-2907-4e20-b876-95a837a5c1a5
+                PORTER_DEPLOYMENT_TARGET_ID: 99f37d8f-ccb3-4178-9d6e-7cd5832c9c17
                 PORTER_HOST: https://noe-dev.withporter.run
                 PORTER_PROJECT: "1"
                 PORTER_TAG: ${{ steps.vars.outputs.sha_short }}
